@@ -1,13 +1,8 @@
-class DictionaryHelper:
 
-    @staticmethod
-    def aggregate_dicts(dicts):
-        aggregation = dict()
+def aggregate_dicts(source, other):
 
-        for idx, dict_to_aggregate in enumerate(dicts):
-            for key, value in dict_to_aggregate.items():
-                if key not in aggregation:
-                    aggregation[key] = [[] for i in range(len(dicts))]
-                aggregation[key][idx] = value
-
-        return aggregation
+    for key, value in other.items():
+        if key not in source:
+            source[key] = value
+        else:
+            source[key]['docs'].update(value['docs'])

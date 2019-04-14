@@ -1,7 +1,7 @@
 class SearchEngineVariablesService:
 
-    columns_to_index = ['title', 'body', 'comments']
-    avg_len_suffix='_avg_len'
+    columns_to_index = ['title', 'body', 'comments', 'content']
+    avg_len_suffix = '_avg_len'
 
     def __init__(self, indexer_db):
         self.variables_collection = indexer_db.variables

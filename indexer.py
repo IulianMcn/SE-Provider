@@ -19,11 +19,11 @@ class Indexer:
         for post_to_compute in posts_to_compute:
             aggregation = self.document_parser.parse_document(post_to_compute)
             for key, value in aggregation.items():
-                for idx, positional_indexes in enumerate(value):
-                    for positional_index in positional_indexes:
-                        self.index_service.upsert_index({
-                            'word': key,
-                            'document_id': ObjectId(post_to_compute['_id']),
-                            'idx': idx,
-                            'positional_index': positional_index
-                        })
+
+                values=list(value)
+                self.index_service.upsert_index({
+                    'word': key,
+                    'document_id': ObjectId(post_to_compute['_id']),
+                    'freq': len(values),
+                    'positions': list(values)
+                })

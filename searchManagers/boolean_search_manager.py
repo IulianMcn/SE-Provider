@@ -1,44 +1,44 @@
-from rulesProviders.string_stemming_rule_provider import StringStemmingRuleProvider
-from rulesProviders.string_split_rule_provider import StringSplitRuleProvider
+
 from db.index_service import IndexService
+from searchManagers.search_manager import SearchManager
 
-class BooleanSearchManager:
 
-    def __init__(self, mongos_client):
-        self.indexer_db = mongos_client['Indexer-Database']
+class BooleanSearchManager(SearchManager):
+    index_service = None
 
-    def process_query(self, query):
-        words_to_compute = StringSplitRuleProvider.alpha_numeric_splitting(
-            query)
-        result = []
+    def __init__(self, mongo_db):
+        super(BooleanSearchManager, self).__init__(mongo_db)
 
-        for word_to_compute in words_to_compute:
-            word_to_query = StringStemmingRuleProvider.snowball(
-                word_to_compute.lower())
-            documents = self.process_word(word_to_query[0])
+    def _OR(self, terms_to_compute):
+        terms_index = self.index_service.get_index_in(terms_to_compute)
+        return self._compute_OR(terms_index)
 
-            if(len(result) == 0):
-                result.extend(documents)
-            else:
-                result = [value for value in result if value in documents] if len(result) > len(
-                    documents) else [value for value in documents if value in result]
+    def _compute_OR(self, terms_index):
+        documents_ids = set()
 
-        return result
+        for term_index in terms_index:
+            documents_ids.update(
+                map(lambda x: x['_id'], term_index['documents']))
 
-    def process_word(self, word):
-        index = self.get_index(word)
+        return documents_ids
 
-        if(index == None):
+    def _AND(self, terms_to_compute):
+        terms_index = self.index_service.get_index_in(terms_to_compute)
+
+        if(terms_index == None):
             return []
 
-        documents = set(list(map(lambda x: x['_id'], index['documents'])))
+        documents_ids = set(
+            map(lambda x: x['_id'], terms_index[0]['documents']))
 
-        return documents
+        iter_terms = iter(terms_index)
+        next(iter_terms)
 
-    def get_index(self, word):
-        index_collection = self.indexer_db.index
-        word_index = index_collection.find_one({
-            '_id': word
-        })
+        for term_index in iter_terms:
+            documents_ids = documents_ids.intersection(
+                set(map(lambda x: x['_id'], term_index['documents'])))
 
-        return word_index
+        return documents_ids
+
+    def process_query(self, query):
+        return self._AND(list(self.get_terms(query).keys()))

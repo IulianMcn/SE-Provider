@@ -4,32 +4,37 @@ from document_parser import DocumentParser
 from rulesProviders.string_stemming_rule_provider import StringStemmingRuleProvider
 from indexer import Indexer
 from searchManagers.boolean_search_manager import BooleanSearchManager
+from searchManagers.frecvency_search_manager import FrecvencySearchManager
+from mapReduce.map_reduce_manager import MapReduceManager
+
 
 def main():
 
     client = MongoClient('localhost', 27017)
+    mongo_db = client["Indexer-Database"]
 
-    search_manager = BooleanSearchManager(client)
+    print("Choose what you wanna do 1-Index 0-Search: ")
+    ch = input()
 
-    document_ids=search_manager.process_query("feel free")
+    if(ch == '1'):
+        mongo_db['direct_map'].remove({})
+        mongo_db['index'].remove({})
 
-    for document_id in document_ids:
-        result = client['Indexer-Database'].posts.find_one({
-            '_id': document_id
-        })
-        print(result['title'])
-        print(result['body'])
-        print(result['comments'])
+        test = MapReduceManager(mongo_db, 8)
+        test.start()
+        print("Good we re done")
+    else:
+        search_manager = FrecvencySearchManager(mongo_db)
+        print("What you wanna search?")
+        query=input()
 
-    # redditProvider = RedditProvider(client)
+        document_ids = search_manager.process_query(query)
 
-    # redditProvider.provide_data()
-
-    # client['Indexer-Database'].index.remove({})
-
-    # indxr = Indexer(client)
-
-    # indxr.parse_current_data()
+        for document_id in document_ids[:10]:
+            result = client['Indexer-Database'].posts.find_one({
+                '_id': document_id
+            })
+            print(result['url'])
 
 
 if(__name__ == '__main__'):
