@@ -16,12 +16,13 @@ class RedditProvider(DataProvider):
     subreddits_service = None
     include_comments = False
 
-    def __init__(self, mongo_db, number_of_subreddits_to_parse=10, limit_of_reddits_to_parse=10):
+    def __init__(self, mongo_db, number_of_subreddits_to_parse=30, limit_of_reddits_to_parse=100):
         super(RedditProvider, self).__init__(mongo_db)
         self.subreddits_service = SubredditsService(mongo_db)
         self.client = praw.Reddit(client_id='-GYWVXI4AgNJgw', cache_timeout=0,
                                   client_secret='8TJSFXgWgWO_dAKwCr2pPB5EUAs',
-                                  user_agent='my user agent?'  # Warning-PY: wtf is this?
+                                  user_agent='my user agent?'  
+                                  # Warning-PY: wtf is this?
                                   )  # Warning-PY: use a praw.ini file when moving to github
         self.number_of_subreddits_to_parse = number_of_subreddits_to_parse
         self.limit_of_reddits_to_parse = limit_of_reddits_to_parse

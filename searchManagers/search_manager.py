@@ -13,6 +13,10 @@ class SearchManager:
     @abstractmethod
     def process_query(self, query): raise NotImplementedError
 
+    def get_documents_len(self, terms_index):
+        docs_ids = self.boolean_search_manager._compute_OR(terms_index)
+        return self.posts_service.get_posts_content_len(docs_ids)
+
     def get_terms(self, query):
         result = dict()
 
@@ -28,9 +32,8 @@ class SearchManager:
 
         for term_to_compute in terms_to_compute:
             if term_to_compute not in result:
-                result[term_to_compute]=0
+                result[term_to_compute] = 0
 
-            result[term_to_compute]=1
-                
+            result[term_to_compute] = 1
 
         return result

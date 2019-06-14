@@ -30,6 +30,7 @@ class FrecvencySearchManager(SearchManager):
         terms_index = list(self.index_service.get_index_in(
             list(terms_to_compute.keys())))
         documents_lens = self.get_documents_len(terms_index)
+        #TODO: maybe get doc len in get index?
         documents_scores_accumulator = dict()
 
         for term_index in terms_index:
@@ -42,6 +43,7 @@ class FrecvencySearchManager(SearchManager):
                     doc['freq'], documents_lens.get(doc['_id']))
 
                 idf = self.compute_inverse_document_frequency(nr_docs)
+
 
                 if doc['_id'] not in documents_scores_accumulator:
                     documents_scores_accumulator[doc['_id']] = 0
@@ -58,7 +60,3 @@ class FrecvencySearchManager(SearchManager):
 
     def compute_inverse_document_frequency(self, dfw):
         return math.log(self.collection_size/dfw)
-
-    def get_documents_len(self, terms_index):
-        docs_ids = self.boolean_search_manager._compute_OR(terms_index)
-        return self.posts_service.get_posts_content_len(docs_ids)
